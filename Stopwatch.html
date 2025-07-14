@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precision Stopwatch</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Stopwatch Pro</h1>
+            <p>Measure time with accuracy and style</p>
+        </div>
+
+        <div class="display">
+            <div class="time" id="time">00:00.00</div>
+        </div>
+
+        <div class="controls">
+            <button class="start-btn" id="startBtn">Start</button>
+            <button class="pause-btn" id="pauseBtn" disabled>Pause</button>
+            <button class="lap-btn" id="lapBtn" disabled>Lap</button>
+            <button class="reset-btn" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="laps-container" id="lapsContainer">
+            <div class="empty-state">
+                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/b88d0fa2-4d14-41d6-bdaf-730ae62ef436.png" alt="Stopwatch icon with circular design and rotating second hand" />
+                <p>Your lap times will appear here</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const timeElement = document.getElementById('time');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const lapBtn = document.getElementById('lapBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const lapsContainer = document.getElementById('lapsContainer');
+
+        // Stopwatch variables
+        let startTime;
+        let elapsedTime = 0;
+        let timerInterval;
+        let lapCount = 0;
+
+        // Format time as MM:SS.MS
+        function formatTime(time) {
+            const minutes = Math.floor(time / 60000).toString().padStart(2, '0');
+            const seconds = Math.floor((time % 60000) / 1000).toString().padStart(2, '0');
+            const milliseconds = Math.floor((time % 1000) / 10).toString().padStart(2, '0');
+            
+            return `${minutes}:${seconds}.${milliseconds}`;
+        }
+
+        // Update the stopwatch time
+        function updateTime() {
+            const currentTime = Date.now();
+            elapsedTime = currentTime - startTime;
+            timeElement.textContent = formatTime(elapsedTime);
+        }
+
+        // Start the stopwatch
+        function start() {
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(updateTime, 10);
+            
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            lapBtn.disabled = false;
+            
+            startBtn.classList.remove('pulse');
+            pauseBtn.classList.add('pulse');
+        }
+
+        // Pause the stopwatch
+        function pause() {
+            clearInterval(timerInterval);
+            
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            lapBtn.disabled = false;
+            
+            pauseBtn.classList.remove('pulse');
+        }
+
+        // Reset the stopwatch
+        function reset() {
+            clearInterval(timerInterval);
+            
+            elapsedTime = 0;
+            timeElement.textContent = '00:00.00';
+            lapCount = 0;
+            
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            lapBtn.disabled = true;
+            
+            pauseBtn.classList.remove('pulse');
+            
+            // Clear laps container and show empty state
+            lapsContainer.innerHTML = `
+                <div class="empty-state">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/24e5fbe1-c133-40d5-baa5-406f8d50ad97.png" alt="Stopwatch icon with circular design and rotating second hand" />
+                    <p>Your lap times will appear here</p>
+                </div>
+            `;
+        }
+
+        // Record a lap time
+        function lap() {
+            lapCount++;
+            
+            // Remove empty state if it exists
+            if (lapsContainer.querySelector('.empty-state')) {
+                lapsContainer.innerHTML = '';
+            }
+            
+            const lapItem = document.createElement('div');
+            lapItem.className = 'lap-item';
+            lapItem.innerHTML = `
+                <span>Lap ${lapCount}</span>
+                <span>${formatTime(elapsedTime)}</span>
+            `;
+            
+            lapsContainer.insertBefore(lapItem, lapsContainer.firstChild);
+            
+            // Add subtle animation for new lap
+            lapItem.style.opacity = '0';
+            setTimeout(() => {
+                lapItem.style.transition = 'opacity 0.3s ease';
+                lapItem.style.opacity = '1';
+            }, 10);
+            
+            // Scroll to top to show new lap
+            lapsContainer.scrollTop = 0;
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', start);
+        pauseBtn.addEventListener('click', pause);
+        lapBtn.addEventListener('click', lap);
+        resetBtn.addEventListener('click', reset);
+
+        // Add initial pulse animation to start button
+        startBtn.classList.add('pulse');
+    </script>
+</body>
+</html>
+
